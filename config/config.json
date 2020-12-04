@@ -6,6 +6,16 @@
     "host": "bikedeboa.postgresql.dbaas.com.br",
     "dialect": "postgres"
   },
+  "heroku": {
+    "username": "lxvgmuyynpjliq",
+    "password": "8c7a1ab05afeea4a803828dad5297e3b372a7c33d123eada60d0ac34e296b99e",
+    "database": "df4v69kmq98mm2",
+    "host": "ec2-54-217-235-137.eu-west-1.compute.amazonaws.com",
+    "dialect": "postgres",
+    "dialectOptions": {
+      "ssl": true
+    }
+  },
   "test": {
     "username": "bikedeboa_test",
     "password": "bikedeboa2016",
