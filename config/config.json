@@ -1,9 +1,9 @@
 {
   "development": {
-    "username": "bikedeboa",
-    "password": "bikedeboa2016",
-    "database": "bikedeboa",
-    "host": "bikedeboa.postgresql.dbaas.com.br",
+    "username": "tsaldanha",
+    "password": "",
+    "database": "tsaldanha",
+    "host": "localhost",
     "dialect": "postgres"
   },
   "heroku": {
