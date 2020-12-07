@@ -11,5 +11,6 @@ router.get('/:_id', LocalController.getById.bind(LocalController))
 router.post('/', AuthController.middlewareAuth, acl.authorize, AuthController.middlewareLogging, LocalController.create.bind(LocalController))
 router.put('/:_id', AuthController.middlewareAuth, acl.authorize, AuthController.middlewareLogging, LocalController.update.bind(LocalController))
 router.delete('/:_id', AuthController.middlewareAuth, acl.authorize, AuthController.middlewareLogging, LocalController.remove.bind(LocalController))
+router.post('/import/:_id', AuthController.middlewareAuth, acl.authorize, AuthController.middlewareLogging, LocalController.import.bind(LocalController))
 
 module.exports = router

@@ -42,6 +42,7 @@ DataSource.prototype.getById = function (request, response, next) {
         where: { id: request.params._id },
         include: [models.Local]
     }
+    console.log("DS",_query, this.model);
 
     this.model.find(_query)
         .then(handleNotFound)
@@ -50,6 +51,7 @@ DataSource.prototype.getById = function (request, response, next) {
         })
         .catch(next)
 }
+
 
 DataSource.prototype.create = function (request, response, next) {
     let _body = request.body

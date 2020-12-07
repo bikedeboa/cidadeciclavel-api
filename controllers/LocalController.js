@@ -481,6 +481,41 @@ LocalController.prototype.remove = function (request, response, next) {
   .catch(next)
 }
 
+LocalController.prototype.import = function(request, response, next) {
+  // transform this in a middleware
+  let Model = models.DataSource;
+  let _DSquery = {
+      where: { id: request.params._id },
+  }
+  //rework thoses promisses;
+
+  Model.find(_DSquery)
+      .then(handleNotFound)
+      .then((data)=>{
+        //check for import's url
+      })
+      .then(()=>{
+        var _query = {
+          attributes: ['id', 'lat', 'lng', 'lat', 'structureType', 'isPublic', 'isCovered', 'text', 'description', 'address', 'photo', 'updatedAt', 'createdAt', 'views', 'city', 'state', 'country', 'isPaid', 'slots' ],
+          where: {datasource_id: request.params._id},
+          include: [{
+            model: models.User,
+            attributes: ['fullname']  
+          }, { 
+            model: models.DataSource
+          }] 
+        }
+        this.model.findAll(_query)
+          .then(function (locals) {
+            response.json(locals)
+          })
+      })
+      .catch(next);
+
+
+
+}
+
 module.exports = function (LocalModel) {
   return new LocalController(LocalModel)
 }
