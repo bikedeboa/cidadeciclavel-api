@@ -55,6 +55,9 @@ module.exports = function(sequelize, DataTypes) {
         },
         slots: {
             type: DataTypes.INTEGER,
+        },
+        datasource_localId: {
+            type: DataTypes.INTEGER,
         }
     }, {
         timestamps: true,
