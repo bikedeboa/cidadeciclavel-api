@@ -15,6 +15,7 @@
   "author": "Denner Evaldt Machado <dnrevaldt@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@googlemaps/google-maps-services-js": "^3.1.13",
     "aws-sdk": "^2.7.7",
     "axios": "^0.21.0",
     "bcrypt-nodejs": "0.0.3",
