@@ -196,7 +196,8 @@ const checkCMLStructuryTypes = function (model) {
   return ccModel;
 }
 
-const importLocalfromDataSourceURL = function(local, model){
+const createFromDataSource =  function(local, model){
+  let CreatedDate = new Date(local.attributes.DATA_INSTALACAO);
   let newLocal = {
     lat : local.geometry.y,
     lng : local.geometry.x,
@@ -207,6 +208,8 @@ const importLocalfromDataSourceURL = function(local, model){
     city: "",
     state: "",
     country: "",
+    createdAt: local.attributes.DATA_INSTALACAO,
+    updatedAt: local.attributes.CTRL_EDICOES,
     datasource_id: 1,
     datasource_localId: local.attributes.OBJECTID,
     isPublic: local.attributes.DOMINIALIDADE == "Público" || local.attributes.DOMINIALIDADE == "Publico"  ? true : false,
@@ -217,6 +220,52 @@ const importLocalfromDataSourceURL = function(local, model){
   
   return model.create(newLocal);
 }
+
+const updateFromDataSource = function(local, model){
+
+}
+
+const readExternalSource = async function(dsid, lastId, model, result = []){
+  var _query = {
+    attributes: ['id', 'lat', 'lng', 'datasource_id', 'datasource_localId', 'createdAt', 'updatedAt' ],
+    where: {datasource_id: dsid} 
+  }
+  const resultoffset = lastId ? "&resultOffset="+lastId : ""
+  let apiData = await axios.get('https://services.arcgis.com/1dSrzEWVQn5kHHyK/arcgis/rest/services/Ciclovias/FeatureServer/2/query?where=1%3D1&outFields=*&outSR=4326&f=json'+resultoffset);
+  console.log("paginação", apiData.data.exceededTransferLimit);
+  let ccData = await model.findAll(_query);
+  
+  let promises = []
+
+  apiData.data.features.map(local=>{
+    let exists = ccData.find(item=>{
+      return local.attributes.OBJECTID === item.datasource_localId;
+    });
+
+    if (!exists){
+      promises.push(createFromDataSource(local,model));
+    }else{
+      // checks if our updateat  is diff from theirs,  if yes
+      // execute update function
+    }
+    
+  });
+  
+  let promResult = await Promise.all(promises) 
+  promResult.map(item=>{
+    result.push(item.dataValues);
+  })
+  
+  let maxId = apiData.data.features.length ? apiData.data.features[apiData.data.features.length-1].attributes.OBJECTID : 0;
+
+  if (apiData.data.exceededTransferLimit){
+    return await readExternalSource(dsid,maxId,model, result);
+  }else{
+    return result;
+  }
+
+}
+
 // PRIVATE FN //
 
 function LocalController (LocalModel) {
@@ -531,79 +580,19 @@ LocalController.prototype.remove = function (request, response, next) {
 
 LocalController.prototype.import = function(request, response, next) {
   // transform this in a middleware
+  const dsId = request.params._id || null;
   let Model = models.DataSource;
   let _DSquery = {
-      where: { id: request.params._id },
+      where: { id: dsId },
   }
   //rework thoses promisses;
   const Local = this.model;
   const promisesInsert = [];
   Model.find(_DSquery)
       .then(handleNotFound)
-      .then((data)=>{
-        //check for import's url
-        let lastId = 0;
-        sequelize.query("select max(\"datasource_localId\") from \"Local\" where \"datasource_id\" = 1 ")
-        .then(data=>{
-          let result = [...data[0]];
-          
-          if (result[0].max){
-            lastId=result[0].max;
-          }
-          return lastId
-        })
-        .then(lastId=>{
-          console.log(lastId);
-          axios.get('https://services.arcgis.com/1dSrzEWVQn5kHHyK/arcgis/rest/services/Ciclovias/FeatureServer/2/query?where=1%3D1&outFields=*&outSR=4326&f=json&resultOffset='+lastId)
-          .then(res=>{
-            var _query = {
-              attributes: ['id', 'lat', 'lng', 'datasource_id', 'datasource_localId' ],
-              where: {datasource_id: request.params._id},
-              include: [{
-                model: models.User,
-                attributes: ['fullname']  
-              }, { 
-                model: models.DataSource
-              }] 
-            }
-            this.model.findAll(_query)
-              .then(function (locals) {
-                const racksToImport = res.data.features.filter(rack => {
-                  return rack.attributes.TIPO_ESTACIONAMENTO === "BICICLETA"
-                });
-                racksToImport.map(local=>{
-
-                  let duplicatedLocals = locals.filter(item=>{
-                    return item.lat == local.geometry.y && item.lng == local.geometry.x || local.attributes.OBJECTID === item.datasource_localId
-                  })
-                  if (!duplicatedLocals.length){
-                    promisesInsert.push(importLocalfromDataSourceURL(local,Local))
-                  }
-                }) 
-                Promise.all(promisesInsert).then(values=>{
-                  let imported = {
-                    created : [],
-                    total: 0
-                  };
-                  values.map(item=>{
-                    imported.created.push(item.dataValues);
-                  });
-
-                  if (imported.created.length){
-                    imported.total = imported.created.length;
-                    response.status(201);
-                    response.json(imported);  
-                  }else{
-                    response.status(200);
-                    response.json({
-                      message: "no items to import"
-                    })
-                  }
-                  
-                }); 
-              });
-          });
-        })
+      .then(async (data)=>{
+          let res = await readExternalSource(dsId,0, this.model);
+          response.json(res);
       })
       .catch(next);
 
