@@ -196,12 +196,30 @@ const checkCMLStructuryTypes = function (model) {
   return ccModel;
 }
 
+const checkCMLClassificationTypes = function (type) {
+  let classification;
+
+  switch (type) {
+    case "HOTSPOT":
+      classification = "hotspot"
+      break
+    case "BICIPARQUE":
+      classification =  "biciparque"
+      break
+    default:
+      classification = "regular"
+  }
+
+  return classification;
+}
+
+
 const createFromDataSource =  function(local, model){
-  let CreatedDate = new Date(local.attributes.DATA_INSTALACAO);
   let newLocal = {
     lat : local.geometry.y,
     lng : local.geometry.x,
     text : local.attributes.MORADA,
+    classification: checkCMLClassificationTypes(local.attributes.TIPO_ESTACIONAMENTO),
     photo : '',
     description: local.attributes.MORADA_DETALHE,
     address: "",
@@ -209,44 +227,72 @@ const createFromDataSource =  function(local, model){
     state: "",
     country: "",
     createdAt: local.attributes.DATA_INSTALACAO,
-    updatedAt: local.attributes.CTRL_EDICOES,
     datasource_id: 1,
     datasource_localId: local.attributes.OBJECTID,
     isPublic: local.attributes.DOMINIALIDADE == "Público" || local.attributes.DOMINIALIDADE == "Publico"  ? true : false,
     slots: local.attributes.CAPACIDADE,
     isCovered: local.attributes.COBERTO == "SIM" ? true : false,
-    structureType: checkCMLStructuryTypes(local.attributes.MODELO)
+    structureType: checkCMLStructuryTypes(local.attributes.MODELO),
+    custom: {
+      cml: {
+        updatedAt: local.attributes.CTRL_EDICOES,
+      }
+    }
   }
   
   return model.create(newLocal);
 }
 
-const updateFromDataSource = function(local, model){
-
+const updateFromDataSource = function(local, place){
+  let newLocal = {
+    lat : local.geometry.y,
+    lng : local.geometry.x,
+    text : local.attributes.MORADA,
+    photo : '',
+    description: local.attributes.MORADA_DETALHE,
+    classification:  checkCMLClassificationTypes(local.attributes.TIPO_ESTACIONAMENTO),
+    address: "",
+    city: "",
+    state: "",
+    country: "",
+    createdAt: local.attributes.DATA_INSTALACAO,
+    datasource_id: 1,
+    datasource_localId: local.attributes.OBJECTID,
+    isPublic: local.attributes.DOMINIALIDADE == "Público" || local.attributes.DOMINIALIDADE == "Publico"  ? true : false,
+    slots: local.attributes.CAPACIDADE,
+    isCovered: local.attributes.COBERTO == "SIM" ? true : false,
+    structureType: checkCMLStructuryTypes(local.attributes.MODELO),
+    custom: {
+      cml: {
+        updatedAt: local.attributes.CTRL_EDICOES,
+      }
+    }
+  }
+  place.update(newLocal);  
 }
 
 const readExternalSource = async function(dsid, lastId, model, result = []){
   var _query = {
-    attributes: ['id', 'lat', 'lng', 'datasource_id', 'datasource_localId', 'createdAt', 'updatedAt' ],
+    attributes: ['id', 'lat', 'lng', 'datasource_id', 'datasource_localId', 'createdAt', 'updatedAt', 'custom' ],
     where: {datasource_id: dsid} 
   }
   const resultoffset = lastId ? "&resultOffset="+lastId : ""
   let apiData = await axios.get('https://services.arcgis.com/1dSrzEWVQn5kHHyK/arcgis/rest/services/Ciclovias/FeatureServer/2/query?where=1%3D1&outFields=*&outSR=4326&f=json'+resultoffset);
-  console.log("paginação", apiData.data.exceededTransferLimit);
   let ccData = await model.findAll(_query);
   
   let promises = []
 
   apiData.data.features.map(local=>{
-    let exists = ccData.find(item=>{
-      return local.attributes.OBJECTID === item.datasource_localId;
+    let place = ccData.find(item=>{
+      return local.attributes.OBJECTID === item.datasource_localId ? item : false;
     });
 
-    if (!exists){
+    if (!place){
       promises.push(createFromDataSource(local,model));
     }else{
-      // checks if our updateat  is diff from theirs,  if yes
-      // execute update function
+      if (local.attributes.CTRL_EDICOES > place.dataValues.custom.cml.updatedAt){
+        //updateFromDataSource(local, place)
+      }
     }
     
   });

@@ -58,6 +58,12 @@ module.exports = function(sequelize, DataTypes) {
         },
         datasource_localId: {
             type: DataTypes.INTEGER,
+        },
+        classification: {
+            type: DataTypes.STRING,
+        },
+        custom: {
+            type: DataTypes.JSON,
         }
     }, {
         timestamps: true,
