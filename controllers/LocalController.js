@@ -320,7 +320,7 @@ function LocalController (LocalModel) {
 
 LocalController.prototype.getAll = function (request, response, next) {
   var _query = {
-    attributes: ['id', 'lat', 'lng', 'lat', 'structureType', 'isPublic', 'isCovered', 'text', 'description', 'address', 'photo', 'updatedAt', 'createdAt', 'views', 'city', 'state', 'country', 'isPaid', 'slots'].concat([
+    attributes: ['id', 'lat', 'lng', 'lat', 'structureType', "classification", 'isPublic', 'isCovered', 'text', 'description', 'address', 'photo', 'updatedAt', 'createdAt', 'views', 'city', 'state', 'country', 'isPaid', 'slots'].concat([
       [
         models.sequelize.literal('(SELECT COUNT(*) FROM "Review" WHERE "Review"."local_id" = "Local"."id")'),
         'reviews'
@@ -350,7 +350,7 @@ LocalController.prototype.getAll = function (request, response, next) {
 
 LocalController.prototype.getAllLight = function (request, response, next) {
   var _query = {
-    attributes: ['id', 'lat', 'lng', 'isPublic', 'isCovered', 'structureType', 'text', 'photo', 'address', 'city', 'state', 'country'].concat([
+    attributes: ['id', 'lat', 'lng', 'isPublic', 'isCovered', 'structureType', "classification", 'text', 'photo', 'address', 'city', 'state', 'country'].concat([
       [
         models.sequelize.literal('(SELECT COUNT(*) FROM "Review" WHERE "Review"."local_id" = "Local"."id")'),
         'reviews' 
@@ -389,7 +389,7 @@ LocalController.prototype.getById = function (request, response, next) {
   // ]
    
   var _query = {
-    attributes: ['id', 'lat', 'lng', 'lat', 'structureType', 'isPublic', 'isCovered', 'text', 'photo', 'description', 'address', 'createdAt', 'views', 'city', 'state', 'country', 'isPaid', 'slots'].concat([
+    attributes: ['id', 'lat', 'lng', 'lat', 'structureType', "classification", 'isPublic', 'isCovered', 'text', 'photo', 'description', 'address', 'createdAt', 'views', 'city', 'state', 'country', 'isPaid', 'slots'].concat([
       [
         models.sequelize.literal('(SELECT COUNT(*) FROM "Review" WHERE "Review"."local_id" = "Local"."id")'),
         'reviews'
