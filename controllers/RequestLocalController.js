@@ -168,6 +168,8 @@ function RequestLocalController (RequestLocalModel) {
 RequestLocalController.prototype.getAll = function (request, response, next) {
   const loggedUser = request.decoded;
 
+  const { city } = request.query;
+
   let baseAttributes = ['id', 'lat', 'lng', 'lat', 'text', 'description','address', 'photo', 'updatedAt', 'createdAt', 'views', 'city', 'state', 'country'];
   if (loggedUser.role === 'admin') {
     baseAttributes = baseAttributes.concat(['isCommerce','commerceName', 'commercePhone', 'commerceRelation']);
@@ -183,6 +185,12 @@ RequestLocalController.prototype.getAll = function (request, response, next) {
       model: models.User,
       attributes: ['fullname']  
     }] 
+  }
+
+  if (city) {
+    _query.where = { 
+      city : city
+    }
   }
 
   this.model.findAll(_query)
