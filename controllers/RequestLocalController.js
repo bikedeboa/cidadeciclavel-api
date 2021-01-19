@@ -202,7 +202,7 @@ RequestLocalController.prototype.getAll = function (request, response, next) {
 
 RequestLocalController.prototype.getAllLight = function (request, response, next) {
   var _query = {
-    attributes: ['id', 'lat', 'lng', 'lat', 'text', 'support','address', 'photo', 'city', 'state', 'country'].concat([
+    attributes: ['id', 'lat', 'lng', 'lat', 'description' ,'text', 'support','address', 'photo', 'city', 'state', 'country'].concat([
       [
         models.sequelize.literal('(SELECT COUNT(*) FROM "Supports" WHERE "Supports"."requestLocal_id" = "RequestLocal"."id")'),
         'support'
