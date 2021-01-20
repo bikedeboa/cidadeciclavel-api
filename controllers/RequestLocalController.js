@@ -168,7 +168,8 @@ function RequestLocalController (RequestLocalModel) {
 RequestLocalController.prototype.getAll = function (request, response, next) {
   const loggedUser = request.decoded;
 
-  const { city } = request.query;
+  const { city, format } = request.query;
+  
 
   let baseAttributes = ['id', 'lat', 'lng', 'lat', 'text', 'description','address', 'photo', 'updatedAt', 'createdAt', 'views', 'city', 'state', 'country'];
   if (loggedUser.role === 'admin') {
@@ -195,7 +196,35 @@ RequestLocalController.prototype.getAll = function (request, response, next) {
 
   this.model.findAll(_query)
     .then(function (locals) {
-      response.json(locals)
+      let resp = locals;
+      if (format === "geojson"){
+        resp = locals.map(place=>{
+          let obj = {
+            type : "Feature",
+            geometry : {
+              type: "point",
+              coordinates: [place.lng, place.lat]
+            },
+            properties: {
+              text: place.text,
+              description: place.description,
+              address: place.address,
+              city: place.city,
+              state: place.state,
+              country: place.country,
+              views: place.views,
+              updatedAt: place.updatedAt,
+              createdAt: place.createdAt,
+              isCommerce: place.isCommerce,
+              commerceName: place.commerceName,
+              commercePhone: place.commercePhone,
+              commerceRelation: place.commerceRelation
+            }
+          }
+          return obj;
+        })
+      }
+      response.json(resp)
     })
     .catch(next)
 }
