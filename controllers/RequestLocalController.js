@@ -200,7 +200,13 @@ RequestLocalController.prototype.getAll = function (request, response, next) {
       if (format === "geojson"){
         resp = {
           type: "FeatureCollection",
-          features: []
+          features: [],
+          crs : {
+            type : "name",
+            properties : {
+              name : "EPSG:3763"
+            }
+          }
         }
         resp.features = locals.map(place=>{
           let obj = {
