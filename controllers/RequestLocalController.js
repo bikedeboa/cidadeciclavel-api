@@ -203,7 +203,7 @@ RequestLocalController.prototype.getAll = function (request, response, next) {
           crs : {
             type : "name",
             properties : {
-              name : "EPSG:3763"
+              name : "EPSG:4326"
             }
           },
           features: []
