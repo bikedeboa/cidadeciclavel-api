@@ -50,7 +50,7 @@ SupportController.prototype.removeQuery = function(_query){
 }
 
 SupportController.prototype.create = function (request, response, next) {
-  let _body = request.body;
+  let {requestLocal_id, options} = request.body;
 
   const loggedUser = request.decoded;
     if (!loggedUser || loggedUser.role === 'client') {
@@ -58,9 +58,12 @@ SupportController.prototype.create = function (request, response, next) {
     }
 
   let _support = {
-    requestLocal_id: _body.requestLocal_id,
-    user_id: loggedUser.id
+    requestLocal_id,
+    user_id: loggedUser.id,
+    options
   }
+
+  console.log(_support);
 
   this.model.create(_support)
     .then(function(support){

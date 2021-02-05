@@ -11,6 +11,9 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true
+    },
+    options: {
+      type: DataTypes.JSON
     }
   }, {});
   Support.associate = function(models) {
