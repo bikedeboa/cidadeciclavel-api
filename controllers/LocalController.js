@@ -229,6 +229,7 @@ const createFromDataSource =  function(local, model){
     createdAt: local.attributes.DATA_INSTALACAO,
     datasource_id: 1,
     datasource_localId: local.attributes.OBJECTID,
+    requestLocal_id: getRequestIdFromDataSource(local.attributes.FONTE_LEVANTAMENTO),
     isPublic: local.attributes.DOMINIALIDADE == "Público" || local.attributes.DOMINIALIDADE == "Publico"  ? true : false,
     slots: local.attributes.CAPACIDADE,
     isCovered: local.attributes.COBERTO == "SIM" ? true : false,
@@ -242,6 +243,21 @@ const createFromDataSource =  function(local, model){
   
   return model.create(newLocal);
 }
+
+const getRequestIdFromDataSource  = function (FONTE_LEVANTAMENTO) {
+  const regex = /CC[0-9]{1,}/gi;
+  const regexReplace = /CC/gi;
+
+  let requestId  = null;
+
+  if(FONTE_LEVANTAMENTO && regex.test(FONTE_LEVANTAMENTO)){
+    requestId = FONTE_LEVANTAMENTO.replace(regexReplace, "")
+  }
+
+  return requestId;
+
+}
+
 
 const updateFromDataSource = function(local, place){
   let newLocal = {
@@ -271,7 +287,12 @@ const updateFromDataSource = function(local, place){
   place.update(newLocal);  
 }
 
+const markRequestAsCompleted = function(model, id){
+  
+}
+
 const readExternalSource = async function(dsid, lastId, model, result = []){
+  //const Request = models.RequestLocal;
   var _query = {
     attributes: ['id', 'lat', 'lng', 'datasource_id', 'datasource_localId', 'createdAt', 'updatedAt', 'custom' ],
     where: {datasource_id: dsid} 
@@ -280,13 +301,15 @@ const readExternalSource = async function(dsid, lastId, model, result = []){
   let apiData = await axios.get('https://services.arcgis.com/1dSrzEWVQn5kHHyK/arcgis/rest/services/Ciclovias/FeatureServer/2/query?where=1%3D1&outFields=*&outSR=4326&f=json'+resultoffset);
   let ccData = await model.findAll(_query);
   
-  let promises = []
+  
+
+  let promises = [];
 
   apiData.data.features.map(local=>{
     let place = ccData.find(item=>{
       return local.attributes.OBJECTID === item.datasource_localId ? item : false;
     });
-
+  
     if (!place){
       promises.push(createFromDataSource(local,model));
     }else{
@@ -338,7 +361,10 @@ LocalController.prototype.getAll = function (request, response, next) {
       include: [models.Tag]
     }, { 
       model: models.DataSource
-    }] 
+    }],
+    where: {
+      active : true,
+    }
   }
 
   this.model.findAll(_query)
@@ -359,7 +385,10 @@ LocalController.prototype.getAllLight = function (request, response, next) {
         models.sequelize.literal('(SELECT AVG("rating") FROM "Review" WHERE "Review"."local_id" = "Local"."id")'),
         'average'
       ]
-    ])
+    ]),
+    where: {
+      active: true,
+    }
   }
 
   this.model.findAll(_query)
@@ -399,7 +428,10 @@ LocalController.prototype.getById = function (request, response, next) {
         'average'
       ]
     ]),
-    where: {id: request.params._id},
+    where: {
+      id: request.params._id,
+      active: true
+    },
     include: [{
       model: models.User,
       attributes: ['fullname'] 

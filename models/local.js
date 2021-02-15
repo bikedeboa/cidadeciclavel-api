@@ -64,7 +64,15 @@ module.exports = function(sequelize, DataTypes) {
         },
         custom: {
             type: DataTypes.JSON,
+        },
+        requestLocal_id: {
+            type: DataTypes.INTEGER,
+        },
+        active: {
+            type: DataTypes.BOOLEAN,
         }
+
+
     }, {
         timestamps: true,
         freezeTableName: true,
@@ -77,6 +85,7 @@ module.exports = function(sequelize, DataTypes) {
                 Local.hasMany(models.Revision, {foreignKey: 'local_id', onDelete: 'cascade', hooks: true});
                 Local.belongsTo(models.User, {foreignKey: 'user_id', hooks: true});
                 Local.belongsTo(models.DataSource, { foreignKey: 'datasource_id', hooks: false });
+                Local.belongsTo(models.RequestLocal, { foreignKey: 'requestLocal_id', hooks: false });
             }
         },
         instanceMethods: {

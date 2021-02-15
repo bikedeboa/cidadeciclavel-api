@@ -185,13 +185,14 @@ RequestLocalController.prototype.getAll = function (request, response, next) {
     include: [{
       model: models.User,
       attributes: ['fullname']  
-    }] 
+    }],
+    where: {
+      active: true,
+    }
   }
 
   if (city) {
-    _query.where = { 
-      city : city
-    }
+    _query.where["city"] = city;
   }
 
   this.model.findAll(_query)
@@ -250,7 +251,10 @@ RequestLocalController.prototype.getAllLight = function (request, response, next
         models.sequelize.literal('(SELECT COUNT(*) FROM "Supports" WHERE "Supports"."requestLocal_id" = "RequestLocal"."id")'),
         'support'
       ]
-    ])
+    ]),
+    where: {
+      active: true
+    }
   }
   this.model.findAll(_query)
     .then(function (locals) {
@@ -275,7 +279,10 @@ RequestLocalController.prototype.getById = function (request, response, next) {
         'support'
       ]
     ]),
-    where: {id: request.params._id},
+    where: {
+      id: request.params._id,
+      active: true,
+    },
     include: [{
       model: models.User,
       attributes: ['fullname']  

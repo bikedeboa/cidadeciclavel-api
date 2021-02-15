@@ -16,7 +16,8 @@ module.exports = (sequelize, DataTypes) => {
     isCommerce: DataTypes.BOOLEAN,
     commerceName: DataTypes.STRING,
     commercePhone: DataTypes.STRING,
-    commerceRelation: DataTypes.STRING
+    commerceRelation: DataTypes.STRING,
+    active: DataTypes.BOOLEAN,
   }, {});
   RequestLocal.associate = function(models) {
     // associations can be defined here
