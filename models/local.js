@@ -65,9 +65,6 @@ module.exports = function(sequelize, DataTypes) {
         custom: {
             type: DataTypes.JSON,
         },
-        requestLocal_id: {
-            type: DataTypes.INTEGER,
-        },
         active: {
             type: DataTypes.BOOLEAN,
         }

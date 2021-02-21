@@ -214,7 +214,8 @@ const checkCMLClassificationTypes = function (type) {
 }
 
 
-const createFromDataSource =  function(local, model){
+const createFromDataSource =  async function(local, model){
+  let requestId = await getRequestIdFromDataSource(local.attributes.FONTE_LEVANTAMENTO);
   let newLocal = {
     lat : local.geometry.y,
     lng : local.geometry.x,
@@ -229,7 +230,7 @@ const createFromDataSource =  function(local, model){
     createdAt: local.attributes.DATA_INSTALACAO,
     datasource_id: 1,
     datasource_localId: local.attributes.OBJECTID,
-    requestLocal_id: getRequestIdFromDataSource(local.attributes.FONTE_LEVANTAMENTO),
+    requestLocal_id: requestId, 
     isPublic: local.attributes.DOMINIALIDADE == "Público" || local.attributes.DOMINIALIDADE == "Publico"  ? true : false,
     slots: local.attributes.CAPACIDADE,
     isCovered: local.attributes.COBERTO == "SIM" ? true : false,
@@ -244,22 +245,24 @@ const createFromDataSource =  function(local, model){
   return model.create(newLocal);
 }
 
-const getRequestIdFromDataSource  = function (FONTE_LEVANTAMENTO) {
+const getRequestIdFromDataSource = async function (FONTE_LEVANTAMENTO) {
   const regex = /CC[0-9]{1,}/gi;
   const regexReplace = /CC/gi;
 
   let requestId  = null;
 
   if(FONTE_LEVANTAMENTO && regex.test(FONTE_LEVANTAMENTO)){
-    requestId = FONTE_LEVANTAMENTO.replace(regexReplace, "")
+    requestId = parseInt(FONTE_LEVANTAMENTO.replace(regexReplace, ""));
+    let result = await models.RequestLocal.find({where: {id : requestId}});
+    requestId = !result ? null : requestId;
   }
 
   return requestId;
-
 }
 
 
-const updateFromDataSource = function(local, place){
+const updateFromDataSource = async function(local, place){
+  let requestId = await getRequestIdFromDataSource(local.attributes.FONTE_LEVANTAMENTO);
   let newLocal = {
     lat : local.geometry.y,
     lng : local.geometry.x,
@@ -274,6 +277,7 @@ const updateFromDataSource = function(local, place){
     createdAt: local.attributes.DATA_INSTALACAO,
     datasource_id: 1,
     datasource_localId: local.attributes.OBJECTID,
+    requestLocal_id: requestId, 
     isPublic: local.attributes.DOMINIALIDADE == "Público" || local.attributes.DOMINIALIDADE == "Publico"  ? true : false,
     slots: local.attributes.CAPACIDADE,
     isCovered: local.attributes.COBERTO == "SIM" ? true : false,
@@ -284,7 +288,7 @@ const updateFromDataSource = function(local, place){
       }
     }
   }
-  place.update(newLocal);  
+  return place.update(newLocal);  
 }
 
 const markRequestAsCompleted = function(model, id){
@@ -314,13 +318,14 @@ const readExternalSource = async function(dsid, lastId, model, result = []){
       promises.push(createFromDataSource(local,model));
     }else{
       if (local.attributes.CTRL_EDICOES > place.dataValues.custom.cml.updatedAt){
-        //updateFromDataSource(local, place)
+        console.log('UPDATE');
+        promises.push(updateFromDataSource(local, place));
       }
     }
     
   });
   
-  let promResult = await Promise.all(promises) 
+  let promResult = await Promise.all(promises);
   promResult.map(item=>{
     result.push(item.dataValues);
   })
@@ -343,7 +348,7 @@ function LocalController (LocalModel) {
 
 LocalController.prototype.getAll = function (request, response, next) {
   var _query = {
-    attributes: ['id', 'lat', 'lng', 'lat', 'structureType', "classification", 'isPublic', 'isCovered', 'text', 'description', 'address', 'photo', 'updatedAt', 'createdAt', 'views', 'city', 'state', 'country', 'isPaid', 'slots'].concat([
+    attributes: ['id', 'lat', 'lng', 'lat', 'structureType', "classification", 'isPublic', 'isCovered', 'text', 'description', 'address', 'photo', 'updatedAt', 'createdAt', 'views', 'city', 'state', 'country', 'isPaid', 'slots', 'requestLocal_id'].concat([
       [
         models.sequelize.literal('(SELECT COUNT(*) FROM "Review" WHERE "Review"."local_id" = "Local"."id")'),
         'reviews'
@@ -376,7 +381,7 @@ LocalController.prototype.getAll = function (request, response, next) {
 
 LocalController.prototype.getAllLight = function (request, response, next) {
   var _query = {
-    attributes: ['id', 'lat', 'lng', 'isPublic', 'isCovered', 'structureType', "classification", 'text', 'photo', 'address', 'city', 'state', 'country'].concat([
+    attributes: ['id', 'lat', 'lng', 'isPublic', 'isCovered', 'structureType', "classification", 'text', 'photo', 'address', 'city', 'state', 'country', 'requestLocal_id'].concat([
       [
         models.sequelize.literal('(SELECT COUNT(*) FROM "Review" WHERE "Review"."local_id" = "Local"."id")'),
         'reviews' 
@@ -418,7 +423,7 @@ LocalController.prototype.getById = function (request, response, next) {
   // ]
    
   var _query = {
-    attributes: ['id', 'lat', 'lng', 'lat', 'structureType', "classification", 'isPublic', 'isCovered', 'text', 'photo', 'description', 'address', 'createdAt', 'views', 'city', 'state', 'country', 'isPaid', 'slots'].concat([
+    attributes: ['id', 'lat', 'lng', 'lat', 'structureType', "classification", 'isPublic', 'isCovered', 'text', 'photo', 'description', 'address', 'createdAt', 'views', 'city', 'state', 'country', 'isPaid', 'slots', 'requestLocal_id'].concat([
       [
         models.sequelize.literal('(SELECT COUNT(*) FROM "Review" WHERE "Review"."local_id" = "Local"."id")'),
         'reviews'
