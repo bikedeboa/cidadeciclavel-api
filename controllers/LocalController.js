@@ -228,7 +228,7 @@ const createFromDataSource =  async function(local, model){
     state: "",
     country: "",
     createdAt: local.attributes.DATA_INSTALACAO,
-    datasource_id: 1,
+    datasource_id: 4,
     datasource_localId: local.attributes.OBJECTID,
     requestLocal_id: requestId, 
     isPublic: local.attributes.DOMINIALIDADE == "Público" || local.attributes.DOMINIALIDADE == "Publico"  ? true : false,
@@ -275,7 +275,7 @@ const updateFromDataSource = async function(local, place){
     state: "",
     country: "",
     createdAt: local.attributes.DATA_INSTALACAO,
-    datasource_id: 1,
+    datasource_id: 4,
     datasource_localId: local.attributes.OBJECTID,
     requestLocal_id: requestId, 
     isPublic: local.attributes.DOMINIALIDADE == "Público" || local.attributes.DOMINIALIDADE == "Publico"  ? true : false,
@@ -295,7 +295,7 @@ const markRequestAsCompleted = function(model, id){
   
 }
 
-const readExternalSource = async function(dsid, lastId, model, result = []){
+const  readExternalSource = async function(dsid, lastId, model, result = []){
   //const Request = models.RequestLocal;
   var _query = {
     attributes: ['id', 'lat', 'lng', 'datasource_id', 'datasource_localId', 'createdAt', 'updatedAt', 'custom' ],
