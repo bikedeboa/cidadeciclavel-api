@@ -177,16 +177,22 @@ const checkCMLStructuryTypes = function (model) {
   let ccModel = null;
   
   switch (model) {
-    case "Entorta Raios": 
+    case "Entorta rodas" || "Entorta rodas com encosto": 
       ccModel = "deroda"
       break
-    case "Sheffield Standard" || "Sheffield estilizado" || "Sheffield JFArroios" || "Sheffield pequeno":
+    case "Sheffield Standard" || "Sheffield estreito" || "Sheffield JFArroios" || "Sheffield pequeno" || "U estreito" :
       ccModel = "uinvertido"
       break
-    case "Wave":
+    case "Onda" || "Wave":
       ccModel = "m"
       break
-    case "Estilizado":
+    case "Expo" || "Cascata": 
+      ccModel = "cascata"
+      break
+    case "Grelha": 
+      ccModel = "grelha";
+      break
+    case "Suporte estilizado":
       ccModel ="other"
       break
     default:
