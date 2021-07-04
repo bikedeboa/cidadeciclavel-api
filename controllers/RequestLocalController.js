@@ -6,10 +6,6 @@ let sharp = require('sharp')
 const AWS_PATH_PREFIX = process.env.AWS_PATH_PREFIX
 const BUCKET_NAME = process.env.BUCKET_NAME
 
-console.log('AWS_PATH_PREFIX', AWS_PATH_PREFIX);
-console.log('BUCKET_NAME', BUCKET_NAME);
-
-
 // PRIVATE FN //
 
 let handleNotFound = function (data) {

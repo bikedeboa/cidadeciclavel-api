@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-
+require('dotenv').config();
 let app = require('../app')
 let debug = require('debug')('api:server')
 let models = require('../models')
+
 let PORT = process.env.PORT || 3000
 
 models.sequelize.sync({logging: false}).then(function () {
