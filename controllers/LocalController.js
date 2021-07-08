@@ -307,8 +307,6 @@ const  readExternalSource = async function(dsid, lastId, model, result = []){
   let apiData = await axios.get('https://services.arcgis.com/1dSrzEWVQn5kHHyK/arcgis/rest/services/Ciclovias/FeatureServer/2/query?where=1%3D1&outFields=*&outSR=4326&f=json'+resultoffset);
   let ccData = await model.findAll(_query);
   
-  
-
   let promises = [];
 
   apiData.data.features.map(local=>{
@@ -621,6 +619,52 @@ LocalController.prototype.update = function (request, response, next) {
       return local
     })
     .catch(next)
+}
+
+LocalController.prototype.merge = function (request, response, next){
+  const _id = request.params._id;
+  const _id_merge = request.params._id_merge;
+  
+  const _query = {
+    where: {id: {
+        $in: [_id, _id_merge]
+      }
+    }
+  }
+
+  this.model.findAll(_query)
+  .then(handleNotFound)
+  .then(async local => {
+    if (local.length == 2){
+      // passar reviews do merge pro receptor
+      let reviews = await models.Review.update(
+        {
+          local_id: _id     
+        },
+        {
+          where: {local_id : _id_merge}
+        });      
+
+      //passar atributos do merge pro receptor 
+      let old = local.find(rack => rack.dataValues.id == _id_merge);
+      old.active = false;
+      old.save();
+      
+      let rack_final = local.find(rack => rack.dataValues.id == _id);
+      rack_final.photo = old.photo;
+      rack_final.authorIP = old.authorIP;
+      rack_final.user_id = old.user_id;
+      rack_final.save();
+
+      response.json(local);
+    }else{
+      handleNotFound()
+    }
+      
+    
+  })
+  .catch(next);
+  
 }
 
 LocalController.prototype.remove = function (request, response, next) {
