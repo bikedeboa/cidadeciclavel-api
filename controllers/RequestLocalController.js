@@ -199,6 +199,80 @@ RequestLocalController.prototype.getAll = function (request, response, next) {
       let resp = locals;
       if (format === "geojson"){
  
+        resp = {
+          type: "FeatureCollection",
+          crs : {
+            type : "name",
+            properties : {
+              name : "EPSG:3763"
+            }
+          },
+          features: []
+        }
+        resp.features = locals.map(place=>{
+          let coords = {x: parseFloat(place.lng), y: parseFloat(place.lat)}
+          let obj = {
+            type : "Feature",
+            id: place.id,
+            geometry : {
+              type: "Point",
+              coordinates: [
+                coords.x, 
+                coords.y
+              ]
+            },
+            properties: {
+              text: place.text,
+              description: place.description,
+              address: place.address,
+              city: place.city,
+              state: place.state,
+              country: place.country,
+              views: place.views,
+              updatedAt: place.updatedAt,
+              createdAt: place.createdAt,
+              isCommerce: place.isCommerce,
+              commerceName: place.commerceName,
+              commercePhone: place.commercePhone,
+              commerceRelation: place.commerceRelation
+            }
+          }
+          return obj;
+        })
+      }
+      response.json(resp)
+    })
+    .catch(next)
+}
+
+RequestLocalController.prototype.getGeojson = function(request, response, next){
+  const { city, format } = request.query;
+  
+
+  let baseAttributes = ['id', 'lat', 'lng', 'lat', 'text', 'description','address', 'photo', 'updatedAt', 'createdAt', 'views', 'city', 'state', 'country'];
+  let _query = {
+    attributes: baseAttributes.concat([
+      [
+        models.sequelize.literal('(SELECT COUNT(*) FROM "Supports" WHERE "Supports"."requestLocal_id" = "RequestLocal"."id")'),
+        'support'
+      ]
+    ]),
+    include: [{
+      model: models.User,
+      attributes: ['fullname']  
+    }],
+    where: {
+      active: true,
+    }
+  }
+
+  if (city) {
+    _query.where["city"] = city;
+  }
+
+  this.model.findAll(_query)
+    .then(function (locals) {
+      let resp = locals;
         const transform = transformation('EPSG:4326', '3763')
 
         resp = {
@@ -241,10 +315,10 @@ RequestLocalController.prototype.getAll = function (request, response, next) {
           }
           return obj;
         })
-      }
-      response.json(resp)
+        response.json(resp)
     })
     .catch(next)
+
 }
 
 RequestLocalController.prototype.getAllLight = function (request, response, next) {
