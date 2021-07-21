@@ -3,6 +3,8 @@ let models = require('../models')
 let AWS = require('aws-sdk')
 let s3 = new AWS.S3()
 let sharp = require('sharp')
+const transformation = require('transform-coordinates');
+
 const AWS_PATH_PREFIX = process.env.AWS_PATH_PREFIX
 const BUCKET_NAME = process.env.BUCKET_NAME
 
@@ -190,30 +192,35 @@ RequestLocalController.prototype.getAll = function (request, response, next) {
   if (city) {
     _query.where["city"] = city;
   }
+ 
 
   this.model.findAll(_query)
     .then(function (locals) {
       let resp = locals;
       if (format === "geojson"){
+ 
+        const transform = transformation('EPSG:4326', '3763')
+
         resp = {
           type: "FeatureCollection",
           crs : {
             type : "name",
             properties : {
-              name : "EPSG:4326"
+              name : "EPSG:3763"
             }
           },
           features: []
         }
         resp.features = locals.map(place=>{
+          let coords = transform.forward({x: parseFloat(place.lng), y: parseFloat(place.lat)})
           let obj = {
             type : "Feature",
             id: place.id,
             geometry : {
               type: "Point",
               coordinates: [
-                parseFloat(place.lng), 
-                parseFloat(place.lat)
+                coords.x, 
+                coords.y
               ]
             },
             properties: {

@@ -40,7 +40,8 @@
     "sequelize": "^3.24.7",
     "sequelize-cli": "^2.8.0",
     "sharp": "^0.19.0",
-    "swig": "^1.4.2"
+    "swig": "^1.4.2",
+    "transform-coordinates": "^1.0.0"
   },
   "devDependencies": {
     "chai": "^3.5.0",
