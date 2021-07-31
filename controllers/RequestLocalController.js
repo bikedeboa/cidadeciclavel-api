@@ -300,19 +300,19 @@ RequestLocalController.prototype.getGeojson = function(request, response, next){
               ]
             },
             properties: {
-              text: place.text || "",
-              description: place.description || "",
-              address: place.address || "",
-              city: place.city || "",
-              state: place.state || "",
-              country: place.country || "",
-              views: place.views || "",
-              updatedAt: place.updatedAt || "",
-              createdAt: place.createdAt || "",
-              isCommerce: place.isCommerce || "",
-              commerceName: place.commerceName || "",
-              commercePhone: place.commercePhone || "",
-              commerceRelation: place.commerceRelation || ""
+              text: "<![CDATA[" + place.text + "]] >" || "",
+              description: "<![CDATA[" + place.description  + "]] >" || "",
+              //address: place.address || "",
+              //city: place.city || "",
+              //state: place.state || "",
+              //country: place.country || "",
+              //views: place.views || "",
+              //updatedAt: place.updatedAt || "",
+              //createdAt: place.createdAt || "",
+              //isCommerce: place.isCommerce || "",
+              //commerceName: place.commerceName || "",
+              //commercePhone: place.commercePhone || "",
+              //commerceRelation: place.commerceRelation || ""
             }
           }
           return obj;
@@ -320,7 +320,7 @@ RequestLocalController.prototype.getGeojson = function(request, response, next){
         
         
         let test = tokml(resp,{
-          name: 'description',
+          name: 'text',
           description: 'description',
           timestamp: 'createdAt',
           documentName: 'Cidade Ciclavel',
