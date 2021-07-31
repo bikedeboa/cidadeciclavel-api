@@ -247,7 +247,7 @@ RequestLocalController.prototype.getAll = function (request, response, next) {
     .catch(next)
 }
 
-RequestLocalController.prototype.getGeojson = function(request, response, next){
+RequestLocalController.prototype.getKML = function(request, response, next){
   const { city, format } = request.query;
   
 
@@ -308,7 +308,7 @@ RequestLocalController.prototype.getGeojson = function(request, response, next){
               //country: place.country || "",
               //views: place.views || "",
               //updatedAt: place.updatedAt || "",
-              //createdAt: place.createdAt || "",
+              createdAt: place.createdAt || "",
               //isCommerce: place.isCommerce || "",
               //commerceName: place.commerceName || "",
               //commercePhone: place.commercePhone || "",
