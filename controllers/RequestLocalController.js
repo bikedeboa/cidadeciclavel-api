@@ -5,6 +5,8 @@ let s3 = new AWS.S3()
 let sharp = require('sharp')
 const transformation = require('transform-coordinates');
 
+const tokml = require('tokml');
+
 const AWS_PATH_PREFIX = process.env.AWS_PATH_PREFIX
 const BUCKET_NAME = process.env.BUCKET_NAME
 
@@ -298,24 +300,36 @@ RequestLocalController.prototype.getGeojson = function(request, response, next){
               ]
             },
             properties: {
-              text: place.text,
-              description: place.description,
-              address: place.address,
-              city: place.city,
-              state: place.state,
-              country: place.country,
-              views: place.views,
-              updatedAt: place.updatedAt,
-              createdAt: place.createdAt,
-              isCommerce: place.isCommerce,
-              commerceName: place.commerceName,
-              commercePhone: place.commercePhone,
-              commerceRelation: place.commerceRelation
+              text: place.text || "",
+              description: place.description || "",
+              address: place.address || "",
+              city: place.city || "",
+              state: place.state || "",
+              country: place.country || "",
+              views: place.views || "",
+              updatedAt: place.updatedAt || "",
+              createdAt: place.createdAt || "",
+              isCommerce: place.isCommerce || "",
+              commerceName: place.commerceName || "",
+              commercePhone: place.commercePhone || "",
+              commerceRelation: place.commerceRelation || ""
             }
           }
           return obj;
         })
-        response.json(resp)
+        
+        
+        let test = tokml(resp,{
+          name: 'description',
+          description: 'description',
+          timestamp: 'createdAt',
+          documentName: 'Cidade Ciclavel',
+          documentDescription: 'Cidade ciclavel list of requests'
+        });
+        
+
+        response.set('Content-Type', 'text/xml');
+        response.send(test);
     })
     .catch(next)
 
