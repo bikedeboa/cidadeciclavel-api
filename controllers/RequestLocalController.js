@@ -323,8 +323,8 @@ RequestLocalController.prototype.getGeojson = function(request, response, next){
           name: 'text',
           description: 'description',
           timestamp: 'createdAt',
-          //documentName: 'Cidade Ciclavel',
-          //documentDescription: 'Cidade ciclavel list of requests'
+          documentName: 'Cidade Ciclavel',
+          documentDescription: 'Cidade ciclavel list of requests'
         });
         
 
