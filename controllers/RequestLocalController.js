@@ -328,8 +328,9 @@ RequestLocalController.prototype.getKML = function(request, response, next){
         });
         
 
-        response.set('Content-Type', 'text/xml');
-        response.send(test);
+        //response.set('Content-Type', 'text/xml');
+        //response.send(test);
+        response.json(resp);
     })
     .catch(next)
 
