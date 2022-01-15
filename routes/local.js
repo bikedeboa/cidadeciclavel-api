@@ -12,6 +12,6 @@ router.post('/', AuthController.middlewareAuth, acl.authorize, AuthController.mi
 router.put('/:_id', AuthController.middlewareAuth, acl.authorize, AuthController.middlewareLogging, LocalController.update.bind(LocalController))
 router.put('/merge/:_id/:_id_merge', AuthController.middlewareAuth, acl.authorize, AuthController.middlewareLogging, LocalController.merge.bind(LocalController))
 router.delete('/:_id', AuthController.middlewareAuth, acl.authorize, AuthController.middlewareLogging, LocalController.remove.bind(LocalController))
-router.post('/import/:_id', AuthController.middlewareAuth, acl.authorize, AuthController.middlewareLogging, LocalController.import.bind(LocalController))
+router.post('/import/:_id', LocalController.import.bind(LocalController))
 
 module.exports = router
