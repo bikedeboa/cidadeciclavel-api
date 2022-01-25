@@ -7,10 +7,13 @@ let AuthController = require('../controllers/AuthController')(models.User)
 
 router.get('/', AuthController.middlewareAuth, acl.authorize, RequestLocalController.getAll.bind(RequestLocalController))
 router.get('/light', RequestLocalController.getAllLight.bind(RequestLocalController))
+router.get('/light/:_city', RequestLocalController.getCityOrdered.bind(RequestLocalController))
+
 //router.get('/kml', RequestLocalController.getKML.bind(RequestLocalController))
 router.get('/:_id', RequestLocalController.getById.bind(RequestLocalController))
 router.post('/', AuthController.middlewareAuth, acl.authorize, AuthController.middlewareLogging, RequestLocalController.create.bind(RequestLocalController))
 router.put('/:_id', AuthController.middlewareAuth, acl.authorize, AuthController.middlewareLogging, RequestLocalController.update.bind(RequestLocalController))
 router.delete('/:_id', AuthController.middlewareAuth, acl.authorize, AuthController.middlewareLogging, RequestLocalController.remove.bind(RequestLocalController))
+router.get('/metrics', RequestLocalController.getAllLight.bind(RequestLocalController))
 
 module.exports = router

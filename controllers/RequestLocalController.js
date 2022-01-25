@@ -338,7 +338,7 @@ RequestLocalController.prototype.getKML = function(request, response, next){
 
 RequestLocalController.prototype.getAllLight = function (request, response, next) {
   var _query = {
-    attributes: ['id', 'lat', 'lng', 'lat', 'description' ,'text', 'support','address', 'photo', 'city', 'state', 'country'].concat([
+    attributes: ['id', 'lat', 'lng', 'lat', 'description' ,'text','address', 'photo', 'city', 'state', 'country'].concat([
       [
         models.sequelize.literal('(SELECT COUNT(*) FROM "Supports" WHERE "Supports"."requestLocal_id" = "RequestLocal"."id")'),
         'support'
@@ -595,6 +595,40 @@ RequestLocalController.prototype.remove = function (request, response, next) {
       })
     })
   .catch(next)
+}
+
+RequestLocalController.prototype.getCityOrdered = function (request, response, next) {
+  //sequelize isnt ordering with query, fix this;
+  let _city = request.params._city;
+  var _query = {
+    attributes: ['id', 'lat', 'lng', 'lat', 'description' ,'text','address', 'photo', 'city', 'state', 'country'].concat([
+      [
+        models.sequelize.literal('(SELECT COUNT(*) FROM "Supports" WHERE "Supports"."requestLocal_id" = "RequestLocal"."id")'),
+        'support'
+      ]
+    ]),
+    where: {
+      active: true,
+      city: _city
+    },
+    order: [
+      ['support', 'DESC'],
+    ]
+  }
+  this.model.findAll(_query)
+    .then(function (locals) {
+      locals.sort(function(a,b){
+        return parseInt(b.support) - parseInt(a.support);
+      });
+      response.json(locals)
+    })
+    .catch(next)
+
+}
+
+RequestLocalController.prototype.metrics = function (request, response, next) {
+  
+  
 }
 
 module.exports = function (RequestLocalModel) {
