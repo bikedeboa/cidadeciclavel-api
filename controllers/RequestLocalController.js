@@ -4,6 +4,7 @@ let AWS = require('aws-sdk')
 let s3 = new AWS.S3()
 let sharp = require('sharp')
 const transformation = require('transform-coordinates');
+const { QueryTypes } = require('sequelize');
 
 const tokml = require('tokml');
 
@@ -597,38 +598,47 @@ RequestLocalController.prototype.remove = function (request, response, next) {
   .catch(next)
 }
 
-RequestLocalController.prototype.getCityOrdered = function (request, response, next) {
-  //sequelize isnt ordering with query, fix this;
+
+RequestLocalController.prototype.metrics = async function (request, response, next) {
   let _city = request.params._city;
-  var _query = {
-    attributes: ['id', 'lat', 'lng', 'lat', 'description' ,'text','address', 'photo', 'city', 'state', 'country'].concat([
-      [
-        models.sequelize.literal('(SELECT COUNT(*) FROM "Supports" WHERE "Supports"."requestLocal_id" = "RequestLocal"."id")'),
-        'support'
-      ]
-    ]),
-    where: {
-      active: true,
-      city: _city
-    },
-    order: [
-      ['support', 'DESC'],
-    ]
-  }
-  this.model.findAll(_query)
-    .then(function (locals) {
-      locals.sort(function(a,b){
-        return parseInt(b.support) - parseInt(a.support);
-      });
-      response.json(locals)
-    })
-    .catch(next)
+  let _query = `
+  SELECT 
+    "RequestLocals".id,
+    "RequestLocals".text,
+    "RequestLocals".address,
+    "RequestLocals".description,
+    COUNT(*) as "Supports", 
+    SUM(CAST(options ->> 'workingOrStuding' AS INTEGER)) AS workingOrStuding,
+    SUM(CAST(options ->> 'events' AS INTEGER)) AS events,
+    SUM(CAST(options ->> 'transportation' AS INTEGER)) AS transportation,
+    SUM(CAST(options ->> 'living' AS INTEGER)) AS living,
+    SUM(CAST(options ->> 'shoppingOrService' AS INTEGER)) AS shoppingOrService
+    
+  FROM 
+    "Supports"
+  JOIN 
+    "RequestLocals"
+  ON 
+    "Supports"."requestLocal_id" = "RequestLocals".id
+  WHERE 
+    "RequestLocals".city = '${_city}'
+  GROUP BY 
+    "Supports"."requestLocal_id", "RequestLocals".description, "RequestLocals"."text", "RequestLocals".address, "RequestLocals".id
+  ORDER by 
+    "Supports" DESC
+    
+    `;
 
-}
+  
+    models.sequelize.query(_query, { type: QueryTypes.SELECT })
+      .then(function(res){
+        response.json(res);
+      })
+      .catch(next);
 
-RequestLocalController.prototype.metrics = function (request, response, next) {
-  
-  
+    
+
+
 }
 
 module.exports = function (RequestLocalModel) {
