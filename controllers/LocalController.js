@@ -403,6 +403,41 @@ LocalController.prototype.getAllLight = function (request, response, next) {
     .catch(next)
 }
 
+LocalController.prototype.getReviewedOrdered = function (request, response, next) {
+  let field = request.params._field || "reviews";
+  let order = request.params._order || "DESC"; 
+
+
+  var _query = {
+    attributes: ['id', 'lat', 'lng', 'isPublic', 'isCovered', 'structureType', "classification", 'text', 'photo', 'address', 'city', 'state', 'country', 'requestLocal_id'].concat([
+      [
+        models.sequelize.literal('(SELECT COUNT(*) FROM "Review" WHERE "Review"."local_id" = "Local"."id")'),
+        'reviews' 
+      ],
+      [
+        models.sequelize.literal('(SELECT AVG("rating") FROM "Review" WHERE "Review"."local_id" = "Local"."id")'),
+        'average'
+      ]
+    ]),
+    include: [{
+      model: models.Review,
+      required: true,
+      attributes: []
+    }],
+    where: {
+      active: true
+    },
+    order:  `${field} ${order}`
+    
+  }
+
+  this.model.findAll(_query)
+    .then(function (locals) {
+      response.json(locals)
+    })
+    .catch(next)
+}
+
 LocalController.prototype.getById = function (request, response, next) {
   var self = this;
 
