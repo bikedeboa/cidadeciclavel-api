@@ -406,10 +406,11 @@ LocalController.prototype.getAllLight = function (request, response, next) {
 LocalController.prototype.getReviewedOrdered = function (request, response, next) {
   let field = request.params._field || "reviews";
   let order = request.params._order || "DESC"; 
+  let city = request.params._city || false; 
 
 
   var _query = {
-    attributes: ['id', 'lat', 'lng', 'isPublic', 'isCovered', 'structureType', "classification", 'text', 'photo', 'address', 'city', 'state', 'country', 'requestLocal_id'].concat([
+    attributes: ['id', 'lat', 'lng', 'isPublic', 'isCovered', 'structureType', 'datasource_id', "classification", 'text', 'photo', 'address', 'city', 'state', 'country', 'requestLocal_id'].concat([
       [
         models.sequelize.literal('(SELECT COUNT(*) FROM "Review" WHERE "Review"."local_id" = "Local"."id")'),
         'reviews' 
@@ -428,6 +429,20 @@ LocalController.prototype.getReviewedOrdered = function (request, response, next
       active: true
     },
     order:  `${field} ${order}`
+    
+  }
+
+  if (city && city != "all"){
+    if (city == "Lisboa"){
+      _query.where.$and = [
+        { $or : [
+          {city : "Lisboa"},
+          {datasource_id: 4}
+        ]}
+      ]
+    }else{
+      _query.where.city = city;
+    }
     
   }
 
