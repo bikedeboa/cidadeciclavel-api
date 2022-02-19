@@ -604,6 +604,8 @@ RequestLocalController.prototype.metrics = async function (request, response, ne
   let _query = `
   SELECT 
     "RequestLocals".id,
+    "RequestLocals".lat,
+    "RequestLocals".lng,
     "RequestLocals".text,
     "RequestLocals".address,
     "RequestLocals".description,
